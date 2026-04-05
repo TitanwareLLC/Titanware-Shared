@@ -1,0 +1,41 @@
+{
+  "name": "@titanwarellc/titanware-shared",
+  "version": "1.0.0",
+  "description": "Shared Angular library for Titanware applications — popup system, base components, and utilities.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TitanwareLLC/Titanware-Shared.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@angular/animations": "^19.0.0 || ^20.0.0",
+    "@angular/common": "^19.0.0 || ^20.0.0",
+    "@angular/core": "^19.0.0 || ^20.0.0",
+    "@angular/forms": "^19.0.0 || ^20.0.0",
+    "@angular/platform-browser": "^19.0.0 || ^20.0.0",
+    "@angular/router": "^19.0.0 || ^20.0.0",
+    "rxjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@angular/animations": "^20.0.0",
+    "@angular/common": "^20.0.0",
+    "@angular/compiler": "^20.0.0",
+    "@angular/compiler-cli": "^20.0.0",
+    "@angular/core": "^20.0.0",
+    "@angular/forms": "^20.0.0",
+    "@angular/platform-browser": "^20.0.0",
+    "@angular/platform-browser-dynamic": "^20.0.0",
+    "@angular/router": "^20.0.0",
+    "ng-packagr": "^20.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.8.0",
+    "typescript": "~5.9.0"
+  }
+}

@@ -1,0 +1,12 @@
+@if (config) {
+  <div class="card {{ theme }}" [@fadeInOut]="animationState">
+    <div class="card-body">
+      <div class="d-flex align-items-center">
+        @if (config?.icon) {
+          <div><i class="{{ config.icon }} me-2"></i></div>
+        }
+        <div [innerHTML]="config.message"></div>
+      </div>
+    </div>
+  </div>
+}

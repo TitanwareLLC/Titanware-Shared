@@ -1,0 +1,24 @@
+@if (config) {
+  <div class="modal-cntr" [@fadeInOut]="animationState">
+
+    @if (type === modalTypes.Alert) {
+      <div class="modal {{ size }}">
+        <popup-modal-alert [setConfig]="config" (onClose)="close()" class="modal-content"></popup-modal-alert>
+      </div>
+    }
+
+    @if (type === modalTypes.Confirmation) {
+      <div class="modal {{ size }}">
+        <popup-modal-confirmation [setConfig]="config" (onClose)="close()" (onConfirm)="confirm()" class="modal-content"></popup-modal-confirmation>
+      </div>
+    }
+
+    @if (config.fuzzyBackground) {
+      <div class="dark-overlay"></div>
+    }
+    @if (config.closeOnOuterClick) {
+      <div class="click-overlay" (click)="close()"></div>
+    }
+
+  </div>
+}
