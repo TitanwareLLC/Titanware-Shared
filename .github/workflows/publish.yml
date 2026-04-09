@@ -1,8 +1,8 @@
-name: Publish to GitHub Packages
+name: Publish to npmjs.com
 
 on:
   push:
-    branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 jobs:
@@ -10,24 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://npm.pkg.github.com'
+          registry-url: 'https://registry.npmjs.org'
           scope: '@titanwarellc'
 
       - name: Install dependencies
         run: npm install
 
+      - name: Upgrade npm (Trusted Publishing requires npm >= 11.5.1)
+        run: npm install -g npm@latest
+
       - name: Build library
         run: npm run build
 
-      - name: Publish to GitHub Packages
-        run: npm publish --access public
+      - name: Publish to npmjs.com (Trusted Publishing via OIDC)
+        run: npm publish --access public --provenance
         working-directory: ./dist
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

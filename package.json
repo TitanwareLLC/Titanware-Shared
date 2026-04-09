@@ -1,6 +1,6 @@
 {
   "name": "@titanwarellc/titanware-shared",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared Angular library for Titanware applications — popup system, base components, and utilities.",
   "license": "MIT",
   "repository": {
@@ -8,7 +8,8 @@
     "url": "https://github.com/TitanwareLLC/Titanware-Shared.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "scripts": {
     "build": "ng-packagr -p ng-package.json",

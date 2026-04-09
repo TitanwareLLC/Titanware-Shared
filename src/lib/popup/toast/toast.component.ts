@@ -1,22 +1,23 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { trigger, state, style, animate, transition } from '@angular/animations';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
 import { ToastConfig, ToastThemeType } from '../popup.models';
 import { ToastService } from '../toast.service';
-
-const fadeInOutAnimation = trigger('fadeInOut', [
-  state('void', style({ opacity: 0, top: '2rem' })),
-  state('fadeIn', style({ opacity: 1, top: '0' })),
-  transition('void => fadeIn', [animate('500ms ease-in')]),
-  transition('fadeIn => void', [animate('500ms ease-out')])
-]);
 
 @Component({
   selector: 'popup-toast',
   standalone: true,
   templateUrl: './toast.component.html',
-  animations: [fadeInOutAnimation],
   styles: [`
-    :host { display: block; pointer-events: auto; }
+    :host {
+      display: block;
+      pointer-events: auto;
+      opacity: 0;
+      transform: translateY(2rem);
+      transition: opacity 500ms ease-in, transform 500ms ease-in;
+    }
+    :host(.show) {
+      opacity: 1;
+      transform: translateY(0);
+    }
     .card { margin-bottom: 0.5rem; border-radius: 8px; }
     .toast-success { color: #fff; background-color: #6ab045; border-color: #6ab045; }
     .toast-warning { color: #222; background-color: #ffc107; border-color: #ffc107; }
@@ -36,21 +37,22 @@ export class ToastComponent implements OnInit {
   private _config: ToastConfig;
 
   theme: string = '';
-  animationState: string = 'void';
 
-  constructor(private service: ToastService) { }
+  constructor(private service: ToastService, private elRef: ElementRef<HTMLElement>) { }
 
   ngOnInit(): void {
     if (this.config) {
       if (this.config.onLoad) this.config.onLoad();
-      this.animationState = 'fadeIn';
+      // Defer to next frame so the initial (hidden) styles are committed
+      // before the .show class triggers the CSS transition.
+      requestAnimationFrame(() => this.elRef.nativeElement.classList.add('show'));
       this.setupTimeout();
     }
   }
 
   private setupTimeout(): void {
     setTimeout(() => {
-      this.animationState = 'void';
+      this.elRef.nativeElement.classList.remove('show');
       if (this.config?.onClose) this.config.onClose();
       setTimeout(() => this.service.removeToast(this.guid), 500);
     }, Math.max((this.config.timeout ?? 3000) - 500, 0));
