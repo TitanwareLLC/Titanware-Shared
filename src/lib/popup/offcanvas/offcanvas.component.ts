@@ -1,26 +1,13 @@
 import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { trigger, state, style, animate, transition } from '@angular/animations';
 import { OffcanvasConfig, OffcanvasLocation } from '../popup.models';
 import { AngularService } from '../angular.service';
-
-const fadeInOutAnimation = trigger('fadeInOut', [
-  state('x-void', style({ width: 0 })),
-  state('y-void', style({ height: 0 })),
-  state('fadeIn', style({})),
-  transition('x-void => fadeIn', [animate('300ms ease-in')]),
-  transition('fadeIn => x-void', [animate('300ms ease-out')]),
-  transition('y-void => fadeIn', [animate('300ms ease-in')]),
-  transition('fadeIn => y-void', [animate('300ms ease-out')])
-]);
 
 @Component({
   selector: 'popup-offcanvas',
   standalone: true,
-  animations: [fadeInOutAnimation],
   template: `
     @if (config) {
       <div #offcanvasEl class="offcanvas resize-offcanvas show {{ location }}"
-           [@fadeInOut]="animationState"
            [style.width.px]="width"
            tabindex="-1">
         <div class="resize-container">
@@ -44,6 +31,7 @@ const fadeInOutAnimation = trigger('fadeInOut', [
     }
   `,
   styles: [`
+    :host { display: block; }
     .no-fuzz { background-color: transparent !important; pointer-events: auto !important; }
     .resize-offcanvas { width: 400px; max-width: 100vw; }
     .resize-container { position: relative; width: 100%; height: 100%; }
@@ -52,6 +40,15 @@ const fadeInOutAnimation = trigger('fadeInOut', [
     .resize-handle:hover { background-color: rgba(0, 0, 0, 0.05); }
     .resize-handle-left { left: 0; }
     .resize-handle-right { right: 0; }
+    .offcanvas { transition: transform 300ms ease-in-out; }
+    .offcanvas.offcanvas-start { transform: translateX(-100%); }
+    .offcanvas.offcanvas-end { transform: translateX(100%); }
+    .offcanvas.offcanvas-top { transform: translateY(-100%); }
+    .offcanvas.offcanvas-bottom { transform: translateY(100%); }
+    :host(.show) .offcanvas { transform: none; }
+    .offcanvas-backdrop { opacity: 0; transition: opacity 300ms ease-in-out; }
+    :host(.show) .offcanvas-backdrop { opacity: 0.5; }
+    :host(.show) .offcanvas-backdrop.no-fuzz { opacity: 1; }
   `]
 })
 export class OffcanvasComponent implements OnInit, OnDestroy {
@@ -59,7 +56,6 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
   @Input() config: OffcanvasConfig;
   @ViewChild('offcanvasEl', { static: true }) offcanvasEl!: ElementRef<HTMLElement>;
 
-  animationState: string | null = null;
   location: string = '';
   isReady: boolean = false;
   locations = OffcanvasLocation;
@@ -70,17 +66,16 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
   private startX = 0;
   private startWidth = 0;
 
-  constructor(private service: AngularService) { }
+  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>) { }
 
   ngOnInit(): void {
     if (this.config) {
-      this.animationState = this.getStartAnimationState();
-      setTimeout(() => {
-        this.location = this.getLocationClass();
-        if (this.config.onLoad) this.config.onLoad();
-        this.animationState = 'fadeIn';
+      this.location = this.getLocationClass();
+      if (this.config.onLoad) this.config.onLoad();
+      requestAnimationFrame(() => {
+        this.elRef.nativeElement.classList.add('show');
         setTimeout(() => { this.isReady = true; }, 300);
-      }, 100);
+      });
     }
   }
 
@@ -89,7 +84,7 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
     if (this.config.onCloseIfAsync && !(await this.config.onCloseIfAsync())) return;
     if (this.config.onClose) this.config.onClose();
     this.isReady = false;
-    this.animationState = this.getStartAnimationState();
+    this.elRef.nativeElement.classList.remove('show');
     setTimeout(() => this.service.removeComponent(this.guid, OffcanvasComponent), 300);
   }
 
@@ -124,8 +119,5 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
       case OffcanvasLocation.Bottom: return 'offcanvas-bottom';
       default: return 'offcanvas-start';
     }
-  }
-  private getStartAnimationState(): string {
-    return this.config.location === OffcanvasLocation.Top || this.config.location === OffcanvasLocation.Bottom ? 'y-void' : 'x-void';
   }
 }

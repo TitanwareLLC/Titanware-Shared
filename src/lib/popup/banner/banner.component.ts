@@ -1,22 +1,13 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { trigger, state, style, animate, transition } from '@angular/animations';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
 import { BannerButton, BannerConfig, BannerContentAlignmentType, BannerLocation, BannerThemeType } from '../popup.models';
 import { AngularService } from '../angular.service';
-
-const fadeInOutAnimation = trigger('fadeInOut', [
-  state('void', style({ opacity: 0 })),
-  state('fadeIn', style({ opacity: 1 })),
-  transition('void => fadeIn', [animate('300ms ease-in')]),
-  transition('fadeIn => void', [animate('300ms ease-out')])
-]);
 
 @Component({
   selector: 'popup-banner',
   standalone: true,
-  animations: [fadeInOutAnimation],
   template: `
     @if (config) {
-      <div class="banner-cntr {{ location }}" [@fadeInOut]="animationState">
+      <div class="banner-cntr {{ location }}">
         <div class="card shadow {{ theme }}">
           <div class="card-body row {{ alignment }}">
             @if (config?.message) {
@@ -33,9 +24,11 @@ const fadeInOutAnimation = trigger('fadeInOut', [
     }
   `,
   styles: [`
+    :host { display: block; }
     .banner-top { top: 0; }
     .banner-bottom { bottom: 0; }
-    .banner-cntr { display: flex; justify-content: center; z-index: 97; position: fixed; left: 0; right: 0; }
+    .banner-cntr { display: flex; justify-content: center; z-index: 97; position: fixed; left: 0; right: 0; opacity: 0; transition: opacity 300ms ease-in; }
+    :host(.show) .banner-cntr { opacity: 1; }
     .banner-cntr .card { z-index: 100; width: 100%; border-radius: 0; }
     .banner-content-left { display: flex; align-items: center; }
     .banner-content-center { display: flex; align-items: center; justify-content: center; }
@@ -56,12 +49,11 @@ export class BannerComponent implements OnInit {
   @Input() guid: string;
   @Input() config: BannerConfig;
 
-  animationState: string = 'void';
   location: string = '';
   alignment: string = '';
   theme: string = '';
 
-  constructor(private service: AngularService) { }
+  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>) { }
 
   ngOnInit(): void {
     if (this.config) {
@@ -70,7 +62,7 @@ export class BannerComponent implements OnInit {
       this.theme = this.getThemeClass();
       this.config?.buttons?.forEach(btn => { btn.themeClass = this.getButtonThemeClass(btn); });
       if (this.config.onLoad) this.config.onLoad();
-      this.animationState = 'fadeIn';
+      requestAnimationFrame(() => this.elRef.nativeElement.classList.add('show'));
     }
   }
 
@@ -84,8 +76,8 @@ export class BannerComponent implements OnInit {
 
   onClose(): void {
     this.config?.onClose?.();
-    this.animationState = 'void';
-    this.service.removeComponent(this.guid, BannerComponent);
+    this.elRef.nativeElement.classList.remove('show');
+    setTimeout(() => this.service.removeComponent(this.guid, BannerComponent), 300);
   }
 
   private getLocationClass(): string {

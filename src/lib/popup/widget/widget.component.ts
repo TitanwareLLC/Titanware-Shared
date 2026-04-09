@@ -1,31 +1,15 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { trigger, state, style, animate, transition } from '@angular/animations';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
 import { WidgetConfig, WidgetLocation, WidgetSize, WidgetThemeType } from '../popup.models';
 import { AngularService } from '../angular.service';
-
-const fadeInOutAnimation = trigger('fadeInOut', [
-  state('void', style({ opacity: 0 })),
-  state('fadeIn', style({ opacity: 1 })),
-  transition('void => fadeIn', [animate('300ms ease-in')]),
-  transition('fadeIn => void', [animate('300ms ease-out')])
-]);
-
-const minmaxAnimation = trigger('minmax', [
-  state('min', style({ borderRadius: '50%', minHeight: '4rem', minWidth: '4rem', maxHeight: '4rem', maxWidth: '4rem' })),
-  state('max', style({ borderRadius: '0', minHeight: '100%', minWidth: '100%', maxHeight: '100%', maxWidth: '100%' })),
-  transition('min => max', [animate('300ms ease-in')]),
-  transition('max => min', [animate('300ms ease-in')])
-]);
 
 @Component({
   selector: 'popup-widget',
   standalone: true,
-  animations: [fadeInOutAnimation, minmaxAnimation],
   template: `
     @if (config) {
-      <div class="widget-cntr {{ location }}" [@fadeInOut]="animationState">
+      <div class="widget-cntr {{ location }}">
         <div class="{{ size }}" [class.hidden]="!isOpen && !isOpening">
-          <div class="card {{ max }} shadow-lg" [@minmax]="(isOpen || isOpening) && !isClosing ? 'max' : 'min'">
+          <div class="card {{ max }} shadow-lg" [class.maximized]="(isOpen || isOpening) && !isClosing">
             <div class="card-header">
               <div class="d-flex align-items-center">
                 @if (config?.maximizeIcon) { <i class="{{ config.maximizeIcon }} me-2"></i> }
@@ -48,8 +32,11 @@ const minmaxAnimation = trigger('minmax', [
     }
   `,
   styles: [`
-    .widget-cntr { display: flex; justify-content: center; z-index: 97; position: fixed; padding: 1rem; }
-    .widget-cntr .card { z-index: 100; }
+    :host { display: block; }
+    .widget-cntr { display: flex; justify-content: center; z-index: 97; position: fixed; padding: 1rem; opacity: 0; transition: opacity 300ms ease-in; }
+    :host(.show) .widget-cntr { opacity: 1; }
+    .widget-cntr .card { z-index: 100; transition: border-radius 300ms ease-in, min-height 300ms ease-in, min-width 300ms ease-in, max-height 300ms ease-in, max-width 300ms ease-in; border-radius: 50%; min-height: 4rem; min-width: 4rem; max-height: 4rem; max-width: 4rem; }
+    .widget-cntr .card.maximized { border-radius: 0; min-height: 100%; min-width: 100%; max-height: 100%; max-width: 100%; }
     .widget-top-left { top: 0; left: 0; }
     .widget-top-right { top: 0; right: 0; }
     .widget-bottom-left { bottom: 0; left: 0; }
@@ -83,7 +70,6 @@ export class WidgetComponent implements OnInit {
   get config(): WidgetConfig { return this._config; }
   private _config: WidgetConfig;
 
-  animationState: string = 'void';
   isOpen: boolean = false;
   isOpening: boolean = false;
   isClosing: boolean = false;
@@ -92,12 +78,12 @@ export class WidgetComponent implements OnInit {
   max: string = '';
   min: string = '';
 
-  constructor(private service: AngularService) { }
+  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>) { }
 
   ngOnInit(): void {
     if (this.config) {
       if (this.config.onLoad) this.config.onLoad();
-      this.animationState = 'fadeIn';
+      requestAnimationFrame(() => this.elRef.nativeElement.classList.add('show'));
     }
   }
 
@@ -119,7 +105,7 @@ export class WidgetComponent implements OnInit {
 
   onCloseWidget() {
     if (this.config?.onClose) this.config.onClose();
-    this.animationState = 'void';
+    this.elRef.nativeElement.classList.remove('show');
     setTimeout(() => this.service.removeComponent(this.guid, WidgetComponent), 500);
   }
 

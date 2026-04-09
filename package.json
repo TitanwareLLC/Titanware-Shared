@@ -1,6 +1,6 @@
 {
   "name": "@titanwarellc/titanware-shared",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Shared Angular library for Titanware applications — popup system, base components, and utilities.",
   "license": "MIT",
   "repository": {
@@ -16,7 +16,6 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@angular/animations": "^19.0.0 || ^20.0.0",
     "@angular/common": "^19.0.0 || ^20.0.0",
     "@angular/core": "^19.0.0 || ^20.0.0",
     "@angular/forms": "^19.0.0 || ^20.0.0",
@@ -25,7 +24,6 @@
     "rxjs": "^7.0.0"
   },
   "devDependencies": {
-    "@angular/animations": "^20.0.0",
     "@angular/common": "^20.0.0",
     "@angular/compiler": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
