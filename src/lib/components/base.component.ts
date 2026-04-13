@@ -1,26 +1,23 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 
 @Component({ template: '', standalone: true })
 export abstract class BaseComponent implements OnInit {
 
-  public isPageLoading: boolean = true;
-  public error: string = '';
+  public isPageLoading = signal(true);
+  public error = signal('');
 
   protected readonly router = inject(Router);
   protected readonly route = inject(ActivatedRoute);
   protected readonly location = inject(Location);
-  protected readonly cdr = inject(ChangeDetectorRef);
 
   public ngOnInit(): void {
     this.initialize().then(() => {
-      this.isPageLoading = false;
-      this.cdr.markForCheck();
+      this.isPageLoading.set(false);
     }).catch((err) => {
-      this.error = err?.message ?? 'An unexpected error occurred.';
-      this.isPageLoading = false;
-      this.cdr.markForCheck();
+      this.error.set(err?.message ?? 'An unexpected error occurred.');
+      this.isPageLoading.set(false);
     });
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@titanwarellc/titanware-shared",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Shared Angular library for Titanware applications — popup system, base components, and utilities.",
   "license": "MIT",
   "repository": {
