@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, signal } from '@angular/core';
 import { WidgetConfig, WidgetLocation, WidgetSize, WidgetThemeType } from '../popup.models';
 import { AngularService } from '../angular.service';
 
@@ -8,8 +8,8 @@ import { AngularService } from '../angular.service';
   template: `
     @if (config) {
       <div class="widget-cntr {{ location }}">
-        <div class="{{ size }}" [class.hidden]="!isOpen && !isOpening">
-          <div class="card {{ max }} shadow-lg" [class.maximized]="(isOpen || isOpening) && !isClosing">
+        <div class="{{ size }}" [class.hidden]="!isOpen() && !isOpening()">
+          <div class="card {{ max }} shadow-lg" [class.maximized]="(isOpen() || isOpening()) && !isClosing()">
             <div class="card-header">
               <div class="d-flex align-items-center">
                 @if (config?.maximizeIcon) { <i class="{{ config.maximizeIcon }} me-2"></i> }
@@ -20,12 +20,12 @@ import { AngularService } from '../angular.service';
             <div class="card-body"></div>
           </div>
         </div>
-        <div class="card card-mini {{ min }} shadow-lg" [class.hidden]="isOpen || isOpening" (click)="onMaximize()">
+        <div class="card card-mini {{ min }} shadow-lg" [class.hidden]="isOpen() || isOpening()" (click)="onMaximize()">
           <div class="card-body d-flex align-items-center justify-content-center p-0">
             @if (config?.minimizeIcon) { <i class="{{ config.minimizeIcon }}"></i> }
           </div>
         </div>
-        @if (!isOpen && !isOpening) {
+        @if (!isOpen() && !isOpening()) {
           <button class="btn btn-close btn-mini" (click)="onCloseWidget()"></button>
         }
       </div>
@@ -70,9 +70,9 @@ export class WidgetComponent implements OnInit {
   get config(): WidgetConfig { return this._config; }
   private _config: WidgetConfig;
 
-  isOpen: boolean = false;
-  isOpening: boolean = false;
-  isClosing: boolean = false;
+  isOpen = signal(false);
+  isOpening = signal(false);
+  isClosing = signal(false);
   location: string = '';
   size: string = '';
   max: string = '';
@@ -88,18 +88,18 @@ export class WidgetComponent implements OnInit {
   }
 
   onMaximize() {
-    if (!this.isOpen) {
+    if (!this.isOpen()) {
       if (this.config?.onMaximize) this.config.onMaximize();
-      this.isOpening = true;
-      setTimeout(() => { this.isOpening = false; this.isOpen = true; }, 500);
+      this.isOpening.set(true);
+      setTimeout(() => { this.isOpening.set(false); this.isOpen.set(true); }, 500);
     }
   }
 
   onMinimize() {
-    if (this.isOpen) {
+    if (this.isOpen()) {
       if (this.config?.onMinimize) this.config.onMinimize();
-      this.isClosing = true;
-      setTimeout(() => { this.isOpen = false; this.isClosing = false; }, 300);
+      this.isClosing.set(true);
+      setTimeout(() => { this.isOpen.set(false); this.isClosing.set(false); }, 300);
     }
   }
 

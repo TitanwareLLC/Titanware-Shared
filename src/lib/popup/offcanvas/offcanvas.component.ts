@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { OffcanvasConfig, OffcanvasLocation } from '../popup.models';
 import { AngularService } from '../angular.service';
 
@@ -11,7 +11,7 @@ import { AngularService } from '../angular.service';
            [style.width.px]="width"
            tabindex="-1">
         <div class="resize-container">
-          @if (isReady) {
+          @if (isReady()) {
             <div class="offcanvas-header bg-light border shadow-sm">
               @if (config.icon) { <i class="{{ config.icon }} me-1 mt-1"></i> }
               @if (config?.title) { <h5 class="offcanvas-title">{{ config.title }}</h5> }
@@ -57,7 +57,7 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
   @ViewChild('offcanvasEl', { static: true }) offcanvasEl!: ElementRef<HTMLElement>;
 
   location: string = '';
-  isReady: boolean = false;
+  isReady = signal(false);
   locations = OffcanvasLocation;
   width = 400;
   private minWidth = 400;
@@ -74,7 +74,7 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
       if (this.config.onLoad) this.config.onLoad();
       requestAnimationFrame(() => {
         this.elRef.nativeElement.classList.add('show');
-        setTimeout(() => { this.isReady = true; }, 300);
+        setTimeout(() => { this.isReady.set(true); }, 300);
       });
     }
   }
@@ -83,7 +83,7 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
     if (this.config.onCloseIf && !this.config.onCloseIf()) return;
     if (this.config.onCloseIfAsync && !(await this.config.onCloseIfAsync())) return;
     if (this.config.onClose) this.config.onClose();
-    this.isReady = false;
+    this.isReady.set(false);
     this.elRef.nativeElement.classList.remove('show');
     setTimeout(() => this.service.removeComponent(this.guid, OffcanvasComponent), 300);
   }
