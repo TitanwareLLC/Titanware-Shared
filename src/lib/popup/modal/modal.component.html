@@ -13,6 +13,22 @@
       </div>
     }
 
+    @if (type === modalTypes.CustomComponent) {
+      <div class="modal {{ size }}">
+        <div class="modal-content">
+          <ng-container *ngComponentOutlet="componentConfig.component; inputs: componentConfig.inputs; injector: componentInjector"></ng-container>
+        </div>
+      </div>
+    }
+
+    @if (type === modalTypes.Image) {
+      <div class="modal {{ size }}">
+        <div class="modal-content d-flex justify-content-center align-items-center">
+          <img [src]="imageConfig.imageSource" class="img-fluid" style="max-height: 100%; object-fit: contain;" alt="" />
+        </div>
+      </div>
+    }
+
     @if (config.fuzzyBackground) {
       <div class="dark-overlay"></div>
     }

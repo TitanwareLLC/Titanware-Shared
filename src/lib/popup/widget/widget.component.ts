@@ -1,10 +1,13 @@
-import { Component, ElementRef, Input, OnInit, signal } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { Component, ElementRef, Injector, Input, OnInit, signal } from '@angular/core';
 import { WidgetConfig, WidgetLocation, WidgetSize, WidgetThemeType } from '../popup.models';
 import { AngularService } from '../angular.service';
+import { PopupRef } from '../popup-ref';
 
 @Component({
   selector: 'popup-widget',
   standalone: true,
+  imports: [NgComponentOutlet],
   template: `
     @if (config) {
       <div class="widget-cntr {{ location }}">
@@ -17,7 +20,9 @@ import { AngularService } from '../angular.service';
                 <button class="btn btn-close ms-auto" (click)="onMinimize()"></button>
               </div>
             </div>
-            <div class="card-body"></div>
+            <div class="card-body">
+              <ng-container *ngComponentOutlet="config.component; inputs: config.inputs; injector: componentInjector"></ng-container>
+            </div>
           </div>
         </div>
         <div class="card card-mini {{ min }} shadow-lg" [class.hidden]="isOpen() || isOpening()" (click)="onMaximize()">
@@ -77,11 +82,16 @@ export class WidgetComponent implements OnInit {
   size: string = '';
   max: string = '';
   min: string = '';
+  componentInjector: Injector;
 
-  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>) { }
+  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>, private injector: Injector) { }
 
   ngOnInit(): void {
     if (this.config) {
+      this.componentInjector = Injector.create({
+        providers: [{ provide: PopupRef, useValue: new PopupRef(() => this.onCloseWidget()) }],
+        parent: this.injector,
+      });
       if (this.config.onLoad) this.config.onLoad();
       requestAnimationFrame(() => this.elRef.nativeElement.classList.add('show'));
     }

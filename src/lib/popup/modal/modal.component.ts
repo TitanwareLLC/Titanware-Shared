@@ -1,14 +1,16 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
-import { ConfirmModalConfig, ModalConfigBase, ModalType } from '../popup.models';
+import { NgComponentOutlet } from '@angular/common';
+import { Component, ElementRef, Injector, Input, OnInit } from '@angular/core';
+import { ComponentModalConfig, ConfirmModalConfig, ImageModalConfig, ModalConfigBase, ModalType } from '../popup.models';
 import { ModalService } from '../modal.service';
 import { PopupService } from '../popup.service';
+import { PopupRef } from '../popup-ref';
 import { AlertComponent } from './alert.component';
 import { ConfirmationComponent } from './confirmation.component';
 
 @Component({
   selector: 'popup-modal',
   standalone: true,
-  imports: [AlertComponent, ConfirmationComponent],
+  imports: [AlertComponent, ConfirmationComponent, NgComponentOutlet],
   templateUrl: './modal.component.html',
   styles: [`
     :host { display: block; }
@@ -38,13 +40,21 @@ export class ModalComponent implements OnInit {
   get config(): ModalConfigBase { return this._config; }
   private _config: ModalConfigBase;
 
+  get componentConfig(): ComponentModalConfig { return this.config as ComponentModalConfig; }
+  get imageConfig(): ImageModalConfig { return this.config as ImageModalConfig; }
+
   modalTypes = ModalType;
   size: string = '';
+  componentInjector: Injector;
 
-  constructor(private popupService: PopupService, private modalService: ModalService, private elRef: ElementRef<HTMLElement>) { }
+  constructor(private popupService: PopupService, private modalService: ModalService, private elRef: ElementRef<HTMLElement>, private injector: Injector) { }
 
   ngOnInit(): void {
     if (this.config) {
+      this.componentInjector = Injector.create({
+        providers: [{ provide: PopupRef, useValue: new PopupRef(() => this.close()) }],
+        parent: this.injector,
+      });
       if (this.config.onLoad) this.config.onLoad();
       requestAnimationFrame(() => this.elRef.nativeElement.classList.add('show'));
     }

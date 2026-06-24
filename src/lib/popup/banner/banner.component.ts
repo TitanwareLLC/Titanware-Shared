@@ -1,16 +1,23 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { Component, ElementRef, Injector, Input, OnInit } from '@angular/core';
 import { BannerButton, BannerConfig, BannerContentAlignmentType, BannerLocation, BannerThemeType } from '../popup.models';
 import { AngularService } from '../angular.service';
+import { PopupRef } from '../popup-ref';
 
 @Component({
   selector: 'popup-banner',
   standalone: true,
+  imports: [NgComponentOutlet],
   template: `
     @if (config) {
       <div class="banner-cntr {{ location }}">
         <div class="card shadow {{ theme }}">
           <div class="card-body row {{ alignment }}">
-            @if (config?.message) {
+            @if (config.component) {
+              <div class="banner-msg col-md-6 col-12">
+                <ng-container *ngComponentOutlet="config.component; inputs: config.inputs; injector: componentInjector"></ng-container>
+              </div>
+            } @else if (config?.message) {
               <div class="banner-msg col-md-6 col-12" [innerHTML]="config.message"></div>
             }
             <div class="d-flex justify-content-end col-md-6 mt-2 mb-2">
@@ -52,11 +59,16 @@ export class BannerComponent implements OnInit {
   location: string = '';
   alignment: string = '';
   theme: string = '';
+  componentInjector: Injector;
 
-  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>) { }
+  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>, private injector: Injector) { }
 
   ngOnInit(): void {
     if (this.config) {
+      this.componentInjector = Injector.create({
+        providers: [{ provide: PopupRef, useValue: new PopupRef(() => this.onClose()) }],
+        parent: this.injector,
+      });
       this.location = this.getLocationClass();
       this.alignment = this.getAlignmentClass();
       this.theme = this.getThemeClass();

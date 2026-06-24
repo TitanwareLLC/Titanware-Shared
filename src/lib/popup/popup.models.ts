@@ -107,6 +107,7 @@ export class ComponentModalConfig extends ModalConfigBase {
   }
 
   public component: any;
+  public inputs?: { [key: string]: any };
   public buttonText?: string;
 }
 
@@ -134,6 +135,7 @@ export class BannerConfig {
   public contentAlignment?: BannerContentAlignmentType;
   public theme?: BannerThemeType;
   public component?: any;
+  public inputs?: { [key: string]: any };
   public message?: string;
   public buttons?: Array<BannerButton>;
   public onLoad?: () => void;
@@ -164,6 +166,7 @@ export class OffcanvasConfig {
   public title?: string;
   public location?: OffcanvasLocation;
   public component?: any;
+  public inputs?: { [key: string]: any };
   public message?: string;
   public fuzzyBackground?: boolean;
   public closeOnOuterClick?: boolean;
@@ -187,6 +190,7 @@ export class WidgetConfig {
   }
 
   public component: any;
+  public inputs?: { [key: string]: any };
   public location?: WidgetLocation;
   public maximizeTheme?: WidgetThemeType;
   public minimizeTheme?: WidgetThemeType;

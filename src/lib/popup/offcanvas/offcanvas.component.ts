@@ -1,10 +1,13 @@
-import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { Component, ElementRef, HostListener, Injector, Input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { OffcanvasConfig, OffcanvasLocation } from '../popup.models';
 import { AngularService } from '../angular.service';
+import { PopupRef } from '../popup-ref';
 
 @Component({
   selector: 'popup-offcanvas',
   standalone: true,
+  imports: [NgComponentOutlet],
   template: `
     @if (config) {
       <div #offcanvasEl class="offcanvas resize-offcanvas show {{ location }}"
@@ -17,7 +20,9 @@ import { AngularService } from '../angular.service';
               @if (config?.title) { <h5 class="offcanvas-title">{{ config.title }}</h5> }
               <button type="button" class="btn-close" (click)="onClose()"></button>
             </div>
-            <div class="offcanvas-body"></div>
+            <div class="offcanvas-body">
+              <ng-container *ngComponentOutlet="config.component; inputs: config.inputs; injector: componentInjector"></ng-container>
+            </div>
           }
           @if (config.location === locations.Left) {
             <div class="resize-handle resize-handle-right" (mousedown)="onResizeMouseDown($event)"></div>
@@ -65,12 +70,17 @@ export class OffcanvasComponent implements OnInit, OnDestroy {
   private isResizing = false;
   private startX = 0;
   private startWidth = 0;
+  componentInjector: Injector;
 
-  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>) { }
+  constructor(private service: AngularService, private elRef: ElementRef<HTMLElement>, private injector: Injector) { }
 
   ngOnInit(): void {
     if (this.config) {
       this.location = this.getLocationClass();
+      this.componentInjector = Injector.create({
+        providers: [{ provide: PopupRef, useValue: new PopupRef(() => this.onClose()) }],
+        parent: this.injector,
+      });
       if (this.config.onLoad) this.config.onLoad();
       requestAnimationFrame(() => {
         this.elRef.nativeElement.classList.add('show');

@@ -1,5 +1,6 @@
 // Popup system
 export { PopupService } from './lib/popup/popup.service';
+export { PopupRef } from './lib/popup/popup-ref';
 export { PopupHostComponent } from './lib/popup/popup-host.component';
 export { ToastService } from './lib/popup/toast.service';
 export { ModalService } from './lib/popup/modal.service';
